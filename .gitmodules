@@ -1,0 +1,12 @@
+[submodule "auth-service"]
+	path = auth-service
+	url = https://github.com/gtx47/auth-service.git
+[submodule "orders-service"]
+	path = orders-service
+	url = https://github.com/gtx47/orders-service.git
+[submodule "users-service"]
+	path = users-service
+	url = https://github.com/gtx47/users-service.git
+[submodule "api-gateway"]
+	path = api-gateway
+	url = https://github.com/gtx47/api-gateway.git
