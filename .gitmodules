@@ -1,18 +1,18 @@
 [submodule "auth-service"]
-	path = auth-service
+	path = BACKEND/Microservices/auth-service
 	url = https://github.com/gtx47/auth-service.git
 [submodule "orders-service"]
-	path = orders-service
+	path = BACKEND/Microservices/orders-service
 	url = https://github.com/gtx47/orders-service.git
 [submodule "users-service"]
-	path = users-service
+	path = BACKEND/Microservices/users-service
 	url = https://github.com/gtx47/users-service.git
 [submodule "api-gateway"]
-	path = api-gateway
+	path = BACKEND/Microservices/api-gateway
 	url = https://github.com/gtx47/api-gateway.git
 [submodule "products-service"]
-	path = products-service
+	path = BACKEND/Microservices/products-service
 	url = https://github.com/gtx47/products-service.git
 [submodule "payments-service"]
-	path = payments-service
+	path = BACKEND/Microservices/payments-service
 	url = https://github.com/gtx47/payments-service.git
