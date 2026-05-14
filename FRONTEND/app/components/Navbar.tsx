@@ -69,14 +69,6 @@ export default function Navbar() {
           >
             Seguir pedido
           </Link>
-          {mounted && session?.role === "admin" && (
-            <Link
-              href="/admin"
-              className="text-[var(--uv-red)] hover:text-[var(--uv-red-dark)]"
-            >
-              Admin
-            </Link>
-          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -108,14 +100,19 @@ export default function Navbar() {
 
           {mounted && session ? (
             <div className="hidden md:flex items-center gap-2 pl-2">
-              <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard"
+                aria-label="Mi cuenta"
+                title="Mi cuenta"
+                className="flex items-center gap-2 px-1.5 py-1 rounded-md hover:bg-gray-50 transition-colors"
+              >
                 <div className="w-7 h-7 rounded-full bg-gray-100 text-black flex items-center justify-center text-xs font-semibold">
                   {(session.name ?? "U").charAt(0).toUpperCase()}
                 </div>
                 <span className="text-[13px] text-gray-700 hidden lg:inline">
                   {session.name}
                 </span>
-              </div>
+              </Link>
               <button
                 onClick={logout}
                 className="px-3 py-1.5 text-[13px] text-gray-600 hover:text-black transition-colors"
@@ -183,13 +180,12 @@ export default function Navbar() {
             <Link href="/orders" onClick={() => setOpen(false)}>
               Seguir pedido
             </Link>
-            {mounted && session?.role === "admin" && (
+            {mounted && session && (
               <Link
-                href="/admin"
-                className="text-[var(--uv-red)]"
+                href="/dashboard"
                 onClick={() => setOpen(false)}
               >
-                Admin
+                Mi cuenta
               </Link>
             )}
             {mounted && !session && (

@@ -7,10 +7,12 @@ import { apiFetch } from "@/app/lib/api";
 
 type LoginResponse = {
   token: string;
-  id: string;
-  name: string;
-  email: string;
-  role: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
 };
 
 export default function Login() {
@@ -37,14 +39,19 @@ export default function Login() {
       return;
     }
 
-    const data = r.data;
-    localStorage.setItem("token", data.token);
+    const { token, user } = r.data;
+    localStorage.setItem("token", token);
     localStorage.setItem(
       "session",
-      JSON.stringify({ id: data.id, name: data.name, email: data.email, role: data.role })
+      JSON.stringify({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      }),
     );
     setLoading(false);
-    router.push(data.role === "admin" ? "/admin" : "/products");
+    router.push(user.role === "admin" ? "/admin" : "/products");
   };
 
   return (

@@ -1,9 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
 import { formatPrice } from "@/app/lib/cart";
 
 type Order = {
@@ -35,7 +32,6 @@ const STATUS_LABELS: Record<string, string> = {
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [token, setToken] = useState<string | null>(null);
-  const router = useRouter();
 
   const load = (t: string) => {
     fetch("/api/orders?scope=all", {
@@ -47,13 +43,10 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     const t = localStorage.getItem("token");
-    if (!t) {
-      router.push("/login");
-      return;
-    }
+    if (!t) return;
     setToken(t);
     load(t);
-  }, [router]);
+  }, []);
 
   const handleUpdate = async (id: string, status: string) => {
     if (!token) return;
@@ -69,17 +62,18 @@ export default function AdminOrdersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col">
-      <Navbar />
-      <main className="max-w-6xl mx-auto px-6 py-16 w-full flex-1">
-        <div className="mb-12">
-          <span className="text-[11px] uppercase tracking-wider text-gray-500">
-            Administración
-          </span>
-          <h1 className="text-4xl font-semibold tracking-display text-black mt-2">
-            Gestión de órdenes
-          </h1>
-        </div>
+    <>
+      <div className="mb-10">
+        <span className="text-[11px] uppercase tracking-wider text-gray-500">
+          Administración
+        </span>
+        <h1 className="text-4xl font-semibold tracking-display text-black mt-2">
+          Gestión de órdenes
+        </h1>
+        <p className="text-gray-500 mt-2">
+          Revisa todas las órdenes y avanza su ciclo de estado.
+        </p>
+      </div>
 
         <div className="divide-y divide-gray-100 border-y border-gray-100">
           {orders.map((o) => (
@@ -134,14 +128,12 @@ export default function AdminOrdersPage() {
               </p>
             </div>
           ))}
-          {orders.length === 0 && (
-            <p className="py-10 text-center text-gray-500">
-              No hay órdenes aún.
-            </p>
-          )}
-        </div>
-      </main>
-      <Footer />
-    </div>
+        {orders.length === 0 && (
+          <p className="py-10 text-center text-gray-500">
+            No hay órdenes aún.
+          </p>
+        )}
+      </div>
+    </>
   );
 }

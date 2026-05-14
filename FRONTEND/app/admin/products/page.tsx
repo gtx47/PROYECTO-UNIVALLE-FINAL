@@ -1,9 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
 import { formatPrice } from "@/app/lib/cart";
 
 type ProductImage = { url: string; storageKey?: string } | null;
@@ -41,7 +38,6 @@ export default function AdminProductsPage() {
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
-  const router = useRouter();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -78,23 +74,10 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     const t = localStorage.getItem("token");
-    if (!t) {
-      router.push("/login");
-      return;
-    }
-    try {
-      const payload = JSON.parse(atob(t.split(".")[1]));
-      if (payload.role !== "admin") {
-        router.push("/");
-        return;
-      }
-    } catch {
-      router.push("/login");
-      return;
-    }
+    if (!t) return;
     setToken(t);
     load();
-  }, [router]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,17 +121,18 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col">
-      <Navbar />
-      <main className="max-w-6xl mx-auto px-6 py-16 w-full flex-1">
-        <div className="mb-12">
-          <span className="text-[11px] uppercase tracking-wider text-gray-500">
-            Administración
-          </span>
-          <h1 className="text-4xl font-semibold tracking-display text-black mt-2">
-            Gestión de productos
-          </h1>
-        </div>
+    <>
+      <div className="mb-10">
+        <span className="text-[11px] uppercase tracking-wider text-gray-500">
+          Administración
+        </span>
+        <h1 className="text-4xl font-semibold tracking-display text-black mt-2">
+          Gestión de productos
+        </h1>
+        <p className="text-gray-500 mt-2">
+          Crea, edita y archiva los productos del catálogo.
+        </p>
+      </div>
 
         <form
           onSubmit={handleSubmit}
@@ -352,9 +336,7 @@ export default function AdminProductsPage() {
               )}
             </tbody>
           </table>
-        </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </>
   );
 }

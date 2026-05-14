@@ -37,7 +37,8 @@ services:
       - MONGO_URI=mongodb://mongo-auth:27017/auth
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_PROMOTE_SECRET=${ADMIN_PROMOTE_SECRET}
-    depends_on: [mongo-auth]
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on: [mongo-auth, rabbitmq]
     networks: [msnet]
 
   users-service:
@@ -49,7 +50,8 @@ services:
       - MONGO_URI=mongodb://mongo-users:27017/users
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_PROMOTE_SECRET=${ADMIN_PROMOTE_SECRET}
-    depends_on: [mongo-users]
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on: [mongo-users, rabbitmq]
     networks: [msnet]
 
   products-service:
