@@ -10,3 +10,9 @@
 [submodule "api-gateway"]
 	path = api-gateway
 	url = https://github.com/gtx47/api-gateway.git
+[submodule "products-service"]
+	path = products-service
+	url = https://github.com/gtx47/products-service.git
+[submodule "payments-service"]
+	path = payments-service
+	url = https://github.com/gtx47/payments-service.git
