@@ -69,6 +69,12 @@ export default function Navbar() {
           >
             Seguir pedido
           </Link>
+          <Link
+            href="/recommendations"
+            className="hover:text-black transition-colors"
+          >
+            Recomendaciones
+          </Link>
         </div>
 
         <div className="flex items-center gap-2">
@@ -179,6 +185,9 @@ export default function Navbar() {
             </Link>
             <Link href="/orders" onClick={() => setOpen(false)}>
               Seguir pedido
+            </Link>
+            <Link href="/recommendations" onClick={() => setOpen(false)}>
+              Recomendaciones
             </Link>
             {mounted && session && (
               <Link
