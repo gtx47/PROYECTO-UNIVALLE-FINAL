@@ -16,3 +16,9 @@
 [submodule "payments-service"]
 	path = BACKEND/Microservices/payments-service
 	url = https://github.com/gtx47/payments-service.git
+[submodule "recommendations-service"]
+	path = BACKEND/Microservices/recommendations-service
+	url = https://github.com/gtx47/recommendations-service
+[submodule "BACKEND/Microservices/recommendations-service"]
+	path = BACKEND/Microservices/recommendations-service
+	url = https://github.com/gtx47/recommendations-service
