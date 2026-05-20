@@ -19,6 +19,3 @@
 [submodule "recommendations-service"]
 	path = BACKEND/Microservices/recommendations-service
 	url = https://github.com/gtx47/recommendations-service
-[submodule "BACKEND/Microservices/recommendations-service"]
-	path = BACKEND/Microservices/recommendations-service
-	url = https://github.com/gtx47/recommendations-service
