@@ -34,11 +34,12 @@ services:
     ports: ["3001:3001"]
     environment:
       - PORT=3001
-      - MONGO_URI=mongodb://mongo-auth:27017/auth
+      - MONGO_URI=${MONGO_URI_AUTH}
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_PROMOTE_SECRET=${ADMIN_PROMOTE_SECRET}
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-    depends_on: [mongo-auth, rabbitmq]
+    depends_on: [rabbitmq]
+    dns: [8.8.8.8, 8.8.4.4]
     networks: [msnet]
 
   users-service:
@@ -47,11 +48,12 @@ services:
     ports: ["3002:3002"]
     environment:
       - PORT=3002
-      - MONGO_URI=mongodb://mongo-users:27017/users
+      - MONGO_URI=${MONGO_URI_USERS}
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_PROMOTE_SECRET=${ADMIN_PROMOTE_SECRET}
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-    depends_on: [mongo-users, rabbitmq]
+    depends_on: [rabbitmq]
+    dns: [8.8.8.8, 8.8.4.4]
     networks: [msnet]
 
   products-service:
@@ -60,15 +62,14 @@ services:
     ports: ["3003:3003"]
     environment:
       - PORT=3003
-      - MONGO_URI=mongodb://mongo-products:27017/products
+      - MONGO_URI=${MONGO_URI_PRODUCTS}
       - JWT_SECRET=${JWT_SECRET}
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
       - UPLOADS_DIR=/app/uploads
     volumes:
       - products-uploads:/app/uploads
-    depends_on:
-      - mongo-products
-      - rabbitmq
+    depends_on: [rabbitmq]
+    dns: [8.8.8.8, 8.8.4.4]
     restart: unless-stopped
     networks: [msnet]
 
@@ -78,11 +79,12 @@ services:
     ports: ["3004:3004"]
     environment:
       - PORT=3004
-      - MONGO_URI=mongodb://mongo-orders:27017/orders
+      - MONGO_URI=${MONGO_URI_ORDERS}
       - JWT_SECRET=${JWT_SECRET}
       - PRODUCTS_URL=http://products-service:3003
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-    depends_on: [mongo-orders, products-service, rabbitmq]
+    depends_on: [products-service, rabbitmq]
+    dns: [8.8.8.8, 8.8.4.4]
     networks: [msnet]
 
   payments-service:
@@ -91,36 +93,12 @@ services:
     ports: ["3005:3005"]
     environment:
       - PORT=3005
-      - MONGO_URI=mongodb://mongo-payments:27017/payments
+      - MONGO_URI=${MONGO_URI_PAYMENTS}
       - JWT_SECRET=${JWT_SECRET}
       - ORDERS_URL=http://orders-service:3004
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-    depends_on: [mongo-payments, orders-service, rabbitmq]
-    networks: [msnet]
-
-  mongo-auth:
-    image: mongo:7
-    volumes: [auth-data:/data/db]
-    networks: [msnet]
-
-  mongo-users:
-    image: mongo:7
-    volumes: [users-data:/data/db]
-    networks: [msnet]
-
-  mongo-products:
-    image: mongo:7
-    volumes: [products-data:/data/db]
-    networks: [msnet]
-
-  mongo-orders:
-    image: mongo:7
-    volumes: [orders-data:/data/db]
-    networks: [msnet]
-
-  mongo-payments:
-    image: mongo:7
-    volumes: [payments-data:/data/db]
+    depends_on: [orders-service, rabbitmq]
+    dns: [8.8.8.8, 8.8.4.4]
     networks: [msnet]
 
   rabbitmq:
@@ -138,11 +116,6 @@ services:
       retries: 5
 
 volumes:
-  auth-data:
-  users-data:
-  products-data:
-  orders-data:
-  payments-data:
   products-uploads:
 
 networks:
