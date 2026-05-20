@@ -10,13 +10,14 @@ type Props = {
     description: string;
     price: number;
     stock: number;
-    image: string;
+    image: { url: string; storageKey?: string } | null;
     category: string;
   };
 };
 
 export default function ProductCard({ product }: Props) {
   const { addItem } = useCart();
+  const imageUrl = product.image?.url ?? "";
 
   const handleAdd = () => {
     addItem(
@@ -24,7 +25,7 @@ export default function ProductCard({ product }: Props) {
         productId: product.id,
         name: product.name,
         price: product.price,
-        image: product.image,
+        image: imageUrl,
       },
       1
     );
@@ -34,9 +35,9 @@ export default function ProductCard({ product }: Props) {
     <article className="group uv-card overflow-hidden flex flex-col">
       <Link href={`/products/${product.id}`} className="relative block">
         <div className="aspect-[4/3] bg-gray-50 overflow-hidden relative">
-          {product.image ? (
+          {imageUrl ? (
             <img
-              src={product.image}
+              src={imageUrl}
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             />
