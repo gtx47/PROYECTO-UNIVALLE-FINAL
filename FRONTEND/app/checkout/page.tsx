@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { useCart, formatPrice } from "@/app/lib/cart";
+import { apiFetch } from "@/app/lib/api";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, isEmpty, clear } = useCart();
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,9 +23,7 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    const t = localStorage.getItem("token");
-    if (!t) router.push("/login");
-    else setToken(t);
+    if (!localStorage.getItem("token")) router.push("/login");
   }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -36,12 +34,8 @@ export default function CheckoutPage() {
     setError("");
     setLoading(true);
     try {
-      const orderRes = await fetch("/api/orders", {
+      const orderRes = await apiFetch<{ id: string }>("/api/orders", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
           items: items.map((i) => ({
             productId: i.productId,
@@ -55,35 +49,30 @@ export default function CheckoutPage() {
           },
         }),
       });
-      const orderJson = await orderRes.json();
-      if (!orderJson.success) {
-        throw new Error(orderJson.error ?? "Error creando orden");
+      if (!orderRes.ok || !orderRes.data) {
+        throw new Error(orderRes.error ?? "Error creando orden");
       }
 
-      const payRes = await fetch("/api/payments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          orderId: orderJson.data.id,
-          cardNumber: form.cardNumber,
-          cardHolder: form.cardHolder,
-        }),
-      });
-      const payJson = await payRes.json();
+      const orderId = orderRes.data.id;
+      const payRes = await apiFetch<{ transactionId?: string; message?: string }>(
+        "/api/payments",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            orderId,
+            cardNumber: form.cardNumber,
+            cardHolder: form.cardHolder,
+          }),
+        }
+      );
 
-      clear();
-
-      if (payJson.success) {
-        router.push(
-          `/payment/success?order=${orderJson.data.id}&tx=${payJson.data.transactionId}`
-        );
+      if (payRes.ok && payRes.data) {
+        clear();
+        router.push(`/payment/success?order=${orderId}&tx=${payRes.data.transactionId}`);
       } else {
         router.push(
-          `/payment/failure?order=${orderJson.data.id}&msg=${encodeURIComponent(
-            payJson.data?.message ?? "Pago rechazado"
+          `/payment/failure?order=${orderId}&msg=${encodeURIComponent(
+            payRes.error ?? "Pago rechazado"
           )}`
         );
       }
