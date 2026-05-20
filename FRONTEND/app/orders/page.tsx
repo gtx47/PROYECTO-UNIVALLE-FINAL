@@ -6,6 +6,7 @@ import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { formatPrice } from "@/app/lib/cart";
+import { apiFetch } from "@/app/lib/api";
 
 type Order = {
   id: string;
@@ -54,16 +55,12 @@ export default function OrdersPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!localStorage.getItem("token")) {
       router.push("/login");
       return;
     }
-    fetch("/api/orders", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((json) => setOrders(json.data ?? []))
+    apiFetch<Order[]>("/api/orders")
+      .then((res) => setOrders(res.data ?? []))
       .finally(() => setLoading(false));
   }, [router]);
 
