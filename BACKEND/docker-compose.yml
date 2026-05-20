@@ -20,12 +20,14 @@ services:
       - PRODUCTS_URL=http://products-service:3003
       - ORDERS_URL=http://orders-service:3004
       - PAYMENTS_URL=http://payments-service:3005
+      - RECOMMENDATIONS_URL=http://recommendations-service:3006
     depends_on:
       - auth-service
       - users-service
       - products-service
       - orders-service
       - payments-service
+      - recommendations-service
     networks: [msnet]
 
   auth-service:
