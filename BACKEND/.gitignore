@@ -1,5 +1,6 @@
 .env
 .env.*.local
+.admin.env
 node_modules/
 dist/
 coverage/
