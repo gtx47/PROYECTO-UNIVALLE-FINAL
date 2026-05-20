@@ -101,6 +101,20 @@ services:
     dns: [8.8.8.8, 8.8.4.4]
     networks: [msnet]
 
+  recommendations-service:
+    build: ./Microservices/recommendations-service
+    container_name: recommendations-service
+    ports: ["3006:3006"]
+    environment:
+      - PORT=3006
+      - MONGO_URI=${MONGO_URI_RECOMMENDATIONS}
+      - JWT_SECRET=${JWT_SECRET}
+      - PRODUCTS_URL=http://products-service:3003
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on: [rabbitmq]
+    dns: [8.8.8.8, 8.8.4.4]
+    networks: [msnet]
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
