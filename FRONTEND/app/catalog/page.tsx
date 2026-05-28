@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ShoppingBag, SlidersHorizontal, X, ShoppingCart } from 'lucide-react';
+import Link from 'next/link';
 import Navbar from '@/app/(landing)/components/Navbar';
 import { apiFetch } from '@/app/lib/api';
 import { useCart, formatPrice } from '@/app/lib/cart';
@@ -115,35 +116,39 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       className="flex flex-col"
     >
       {/* Image */}
-      <div className="relative aspect-square bg-[#F0EFED] rounded-[4px] overflow-hidden group">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={product.name}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <ShoppingBag size={32} strokeWidth={1.1} color="#C0BDB8" />
-          </div>
-        )}
-        {product.stock <= 0 && (
-          <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-            <span className="font-body text-[11px] uppercase tracking-[0.12em] bg-[#1A1A1A] text-white px-3 py-1">
-              Agotado
-            </span>
-          </div>
-        )}
-      </div>
+      <Link href={`/products/${product.id}`} className="block">
+        <div className="relative aspect-square bg-[#F0EFED] rounded-[4px] overflow-hidden group">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={product.name}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <ShoppingBag size={32} strokeWidth={1.1} color="#C0BDB8" />
+            </div>
+          )}
+          {product.stock <= 0 && (
+            <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+              <span className="font-body text-[11px] uppercase tracking-[0.12em] bg-[#1A1A1A] text-white px-3 py-1">
+                Agotado
+              </span>
+            </div>
+          )}
+        </div>
+      </Link>
 
       {/* Info */}
       <div className="mt-3 space-y-1.5">
         <span className="font-body text-[11px] uppercase tracking-[0.1em] text-[#6B6B6B]">
           {product.category}
         </span>
-        <p className="font-display font-semibold text-[14px] text-[#1A1A1A] leading-snug line-clamp-2">
-          {product.name}
-        </p>
+        <Link href={`/products/${product.id}`}>
+          <p className="font-display font-semibold text-[14px] text-[#1A1A1A] leading-snug line-clamp-2 hover:text-[#C92A2A] transition-colors duration-200">
+            {product.name}
+          </p>
+        </Link>
         <p className="font-display font-bold text-[16px] text-[#1A1A1A]">
           {formatPrice(product.price)}
         </p>

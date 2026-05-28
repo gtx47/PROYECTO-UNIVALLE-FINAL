@@ -47,6 +47,12 @@ export default function CheckoutPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  const handleCardNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 16);
+    const formatted = digits.replace(/(.{4})/g, '$1 ').trim();
+    setForm({ ...form, cardNumber: formatted });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -69,7 +75,7 @@ export default function CheckoutPage() {
       const orderId = orderRes.data.id;
       const payRes = await apiFetch<{ transactionId?: string; message?: string }>('/api/payments', {
         method: 'POST',
-        body: JSON.stringify({ orderId, cardNumber: form.cardNumber, cardHolder: form.cardHolder }),
+        body: JSON.stringify({ orderId, cardNumber: form.cardNumber.replace(/\s/g, ''), cardHolder: form.cardHolder }),
       });
 
       if (payRes.ok && payRes.data) {
@@ -167,7 +173,7 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <label className={label}>Número de tarjeta</label>
-                  <input required name="cardNumber" placeholder="1234 5678 9012 3456" value={form.cardNumber} onChange={handleChange} className={field} />
+                  <input required name="cardNumber" placeholder="1234 5678 9012 3456" value={form.cardNumber} onChange={handleCardNumber} inputMode="numeric" maxLength={19} className={`${field} tracking-widest`} />
                 </div>
               </div>
             </div>
