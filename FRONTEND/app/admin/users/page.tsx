@@ -1,48 +1,37 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '@/app/lib/api';
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: "customer" | "admin";
-};
-
+type User = { id: string; name: string; email: string; role: 'customer' | 'admin' };
 type Session = { id?: string; email?: string };
+
+const INPUT = 'w-full border border-[#E8E6E2] rounded-md px-3 font-body text-[13px] text-[#1A1A1A] bg-white focus:outline-none focus:border-[#1A1A1A] transition-colors';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [feedback, setFeedback] = useState("");
+  const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState('');
   const [promoteTarget, setPromoteTarget] = useState<User | null>(null);
-  const [promoteSecret, setPromoteSecret] = useState("");
+  const [promoteSecret, setPromoteSecret] = useState('');
   const [promoting, setPromoting] = useState(false);
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
-    setError("");
-    const r = await apiFetch<User[]>("/api/users");
-    if (!r.ok) {
-      setError(r.error || "No se pudieron cargar los usuarios");
-      setUsers([]);
-    } else {
-      setUsers(r.data ?? []);
-    }
+    setError('');
+    const r = await apiFetch<User[]>('/api/users');
+    if (!r.ok) { setError(r.error || 'No se pudieron cargar los usuarios'); setUsers([]); }
+    else { setUsers(r.data ?? []); }
     setLoading(false);
   };
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("session");
-      if (raw) {
-        const s = JSON.parse(raw) as Session;
-        setCurrentEmail(s.email ?? null);
-      }
+      const raw = localStorage.getItem('session');
+      if (raw) setCurrentEmail((JSON.parse(raw) as Session).email ?? null);
     } catch {}
     load();
   }, []);
@@ -50,92 +39,72 @@ export default function AdminUsersPage() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return users;
-    return users.filter(
-      (u) =>
-        u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q),
-    );
+    return users.filter((u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
   }, [users, query]);
 
-  const adminCount = users.filter((u) => u.role === "admin").length;
+  const adminCount = users.filter((u) => u.role === 'admin').length;
   const customerCount = users.length - adminCount;
 
   const handlePromote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!promoteTarget) return;
     setPromoting(true);
-    setError("");
-    setFeedback("");
-    const r = await apiFetch<{ success: boolean; message: string }>(
-      "/api/admin/promote",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          email: promoteTarget.email,
-          secret: promoteSecret,
-        }),
-      },
-    );
+    setError('');
+    setFeedback('');
+    const r = await apiFetch<{ success: boolean; message: string }>('/api/admin/promote', {
+      method: 'POST',
+      body: JSON.stringify({ email: promoteTarget.email, secret: promoteSecret }),
+    });
     setPromoting(false);
-    if (!r.ok) {
-      setError(r.error || "No se pudo promover al usuario");
-      return;
-    }
+    if (!r.ok) { setError(r.error || 'No se pudo promover al usuario'); return; }
     setFeedback(`${promoteTarget.name} ahora es administrador.`);
     setPromoteTarget(null);
-    setPromoteSecret("");
+    setPromoteSecret('');
     load();
   };
 
   const handleDelete = async (user: User) => {
     if (user.email === currentEmail) return;
-    if (
-      !confirm(
-        `¿Eliminar a ${user.name} (${user.email})? Esta acción no se puede deshacer.`,
-      )
-    ) {
-      return;
-    }
-    setError("");
-    setFeedback("");
-    const r = await apiFetch(`/api/users/${user.id}`, { method: "DELETE" });
-    if (!r.ok) {
-      setError(r.error || "No se pudo eliminar el usuario");
-      return;
-    }
+    if (!confirm(`¿Eliminar a ${user.name} (${user.email})? Esta acción no se puede deshacer.`)) return;
+    setError('');
+    setFeedback('');
+    const r = await apiFetch(`/api/users/${user.id}`, { method: 'DELETE' });
+    if (!r.ok) { setError(r.error || 'No se pudo eliminar el usuario'); return; }
     setFeedback(`${user.name} fue eliminado.`);
     load();
   };
 
   return (
     <>
+      {/* Header */}
       <div className="mb-10">
-        <span className="text-[11px] uppercase tracking-wider text-gray-500">
-          Administración
-        </span>
-        <h1 className="text-4xl font-semibold tracking-display text-black mt-2">
+        <p className="font-body text-[11px] uppercase tracking-[0.12em] text-[#6B6B6B] mb-1">Administración</p>
+        <h1 className="font-display font-bold text-[28px] text-[#1A1A1A]" style={{ letterSpacing: '-0.025em' }}>
           Gestión de usuarios
         </h1>
-        <p className="text-gray-500 mt-2">
+        <p className="font-body text-[14px] text-[#6B6B6B] mt-1">
           Promueve clientes a administradores o elimina cuentas inactivas.
         </p>
       </div>
 
+      {/* Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-        <Metric label="Total" value={users.length} />
-        <Metric label="Administradores" value={adminCount} accent />
-        <Metric label="Clientes" value={customerCount} />
+        <MetricCard label="Total" value={users.length} />
+        <MetricCard label="Administradores" value={adminCount} accent />
+        <MetricCard label="Clientes" value={customerCount} />
       </div>
 
+      {/* Search + reload */}
       <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
         <input
           placeholder="Buscar por nombre o correo…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="uv-input h-11 max-w-sm"
+          className={`${INPUT} h-11 max-w-sm`}
         />
         <button
           onClick={load}
-          className="text-sm text-gray-600 hover:text-black inline-flex items-center gap-1.5"
+          className="font-body text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] inline-flex items-center gap-1.5 transition-colors"
         >
           <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5" strokeWidth={1.8} stroke="currentColor">
             <path d="M4 4v6h6M20 20v-6h-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -146,103 +115,86 @@ export default function AdminUsersPage() {
       </div>
 
       {error && (
-        <p className="text-[var(--uv-red)] border border-[var(--uv-red)]/20 bg-[var(--uv-red)]/5 rounded-md p-3 text-sm mb-5">
+        <p className="font-body text-[13px] text-[#C92A2A] border border-[#C92A2A]/25 bg-[#C92A2A]/5 rounded-md px-4 py-3 mb-5">
           {error}
         </p>
       )}
       {feedback && (
-        <p className="text-emerald-700 border border-emerald-200 bg-emerald-50 rounded-md p-3 text-sm mb-5">
+        <p className="font-body text-[13px] text-emerald-700 border border-emerald-200 bg-emerald-50 rounded-md px-4 py-3 mb-5">
           {feedback}
         </p>
       )}
 
-      <div className="border border-gray-100 rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+      {/* Table */}
+      <div className="border border-[#E8E6E2] rounded-md overflow-hidden bg-white">
+        <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100 text-left">
-              <th className="py-3 px-5 text-[12px] uppercase tracking-wider text-gray-500 font-medium">
-                Usuario
-              </th>
-              <th className="py-3 px-5 text-[12px] uppercase tracking-wider text-gray-500 font-medium">
-                Correo
-              </th>
-              <th className="py-3 px-5 text-[12px] uppercase tracking-wider text-gray-500 font-medium">
-                Rol
-              </th>
-              <th className="py-3 px-5"></th>
+            <tr className="border-b border-[#E8E6E2]">
+              <th className="py-3 px-5 text-left font-body text-[11px] uppercase tracking-[0.1em] text-[#6B6B6B] font-medium">Usuario</th>
+              <th className="py-3 px-5 text-left font-body text-[11px] uppercase tracking-[0.1em] text-[#6B6B6B] font-medium">Correo</th>
+              <th className="py-3 px-5 text-left font-body text-[11px] uppercase tracking-[0.1em] text-[#6B6B6B] font-medium">Rol</th>
+              <th className="py-3 px-5" />
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={4} className="py-10 px-5 text-center text-gray-500">
-                  Cargando…
-                </td>
+                <td colSpan={4} className="py-10 px-5 text-center font-body text-[13px] text-[#6B6B6B]">Cargando…</td>
               </tr>
             )}
-            {!loading &&
-              filtered.map((u) => {
-                const isSelf = u.email === currentEmail;
-                return (
-                  <tr
-                    key={u.id}
-                    className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="py-4 px-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-black">
-                          {u.name.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-black">
-                          {u.name}
-                          {isSelf && (
-                            <span className="ml-2 text-[11px] text-gray-400">
-                              (tú)
-                            </span>
-                          )}
-                        </span>
+            {!loading && filtered.map((u) => {
+              const isSelf = u.email === currentEmail;
+              return (
+                <tr key={u.id} className="border-b border-[#E8E6E2] last:border-0 hover:bg-[#F0EFED] transition-colors">
+                  <td className="py-4 px-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#1A1A1A] flex items-center justify-center text-white text-[12px] font-bold shrink-0">
+                        {u.name.charAt(0).toUpperCase()}
                       </div>
-                    </td>
-                    <td className="py-4 px-5 text-gray-700">{u.email}</td>
-                    <td className="py-4 px-5">
-                      {u.role === "admin" ? (
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[var(--uv-red)]/10 text-[var(--uv-red)] text-[11px] font-semibold uppercase tracking-wider">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--uv-red)]" />
-                          Admin
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px] font-semibold uppercase tracking-wider">
-                          Cliente
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-4 px-5 text-right space-x-4 whitespace-nowrap">
-                      {u.role === "customer" && (
-                        <button
-                          onClick={() => setPromoteTarget(u)}
-                          className="text-sm text-black hover:text-[var(--uv-red)]"
-                        >
-                          Promover
-                        </button>
-                      )}
-                      {!isSelf && (
-                        <button
-                          onClick={() => handleDelete(u)}
-                          className="text-sm text-gray-500 hover:text-[var(--uv-red)]"
-                        >
-                          Eliminar
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+                      <span className="font-body text-[13px] text-[#1A1A1A]">
+                        {u.name}
+                        {isSelf && <span className="ml-2 font-body text-[11px] text-[#6B6B6B]">(tú)</span>}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 font-body text-[13px] text-[#6B6B6B]">{u.email}</td>
+                  <td className="py-4 px-5">
+                    {u.role === 'admin' ? (
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#C92A2A]/10 text-[#C92A2A] font-body text-[11px] font-semibold uppercase tracking-[0.08em]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#C92A2A]" />
+                        Admin
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#F0EFED] text-[#6B6B6B] font-body text-[11px] font-semibold uppercase tracking-[0.08em]">
+                        Cliente
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-4 px-5 text-right space-x-4 whitespace-nowrap">
+                    {u.role === 'customer' && (
+                      <button
+                        onClick={() => setPromoteTarget(u)}
+                        className="font-body text-[13px] text-[#1A1A1A] hover:text-[#C92A2A] transition-colors"
+                      >
+                        Promover
+                      </button>
+                    )}
+                    {!isSelf && (
+                      <button
+                        onClick={() => handleDelete(u)}
+                        className="font-body text-[13px] text-[#6B6B6B] hover:text-[#C92A2A] transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
             {!loading && filtered.length === 0 && (
               <tr>
-                <td colSpan={4} className="py-10 px-5 text-center text-gray-500">
-                  {query
-                    ? "Ningún usuario coincide con la búsqueda."
-                    : "Aún no hay usuarios registrados."}
+                <td colSpan={4} className="py-10 px-5 text-center font-body text-[13px] text-[#6B6B6B]">
+                  {query ? 'Ningún usuario coincide con la búsqueda.' : 'Aún no hay usuarios registrados.'}
                 </td>
               </tr>
             )}
@@ -250,48 +202,45 @@ export default function AdminUsersPage() {
         </table>
       </div>
 
+      {/* Promote modal */}
       {promoteTarget && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <form
-            onSubmit={handlePromote}
-            className="bg-white rounded-2xl p-8 max-w-md w-full shadow-xl"
-          >
-            <h2 className="text-xl font-semibold tracking-display text-black mb-2">
+          <form onSubmit={handlePromote} className="bg-white rounded-md p-8 max-w-md w-full shadow-xl border border-[#E8E6E2]">
+            <p className="font-body text-[11px] uppercase tracking-[0.12em] text-[#6B6B6B] mb-2">Acción de administrador</p>
+            <h2 className="font-display font-bold text-[20px] text-[#1A1A1A] mb-3" style={{ letterSpacing: '-0.02em' }}>
               Promover a administrador
             </h2>
-            <p className="text-sm text-gray-500 mb-6">
-              Vas a otorgar permisos de administrador a{" "}
-              <strong className="text-black">{promoteTarget.name}</strong> (
-              {promoteTarget.email}). Confirma con la clave secreta de
-              promoción.
+            <p className="font-body text-[14px] text-[#6B6B6B] mb-6 leading-relaxed">
+              Vas a otorgar permisos de administrador a{' '}
+              <strong className="text-[#1A1A1A]">{promoteTarget.name}</strong>{' '}
+              ({promoteTarget.email}). Confirma con la clave secreta de promoción.
             </p>
-            <label className="uv-label">Clave secreta</label>
+            <label className="block font-body text-[11px] uppercase tracking-[0.1em] text-[#6B6B6B] mb-1.5">
+              Clave secreta
+            </label>
             <input
               type="password"
               required
               autoFocus
               value={promoteSecret}
               onChange={(e) => setPromoteSecret(e.target.value)}
-              className="uv-input h-11 mb-6"
+              className={`${INPUT} h-11 mb-6`}
               placeholder="Introduce la clave"
             />
             <div className="flex justify-end gap-3">
               <button
                 type="button"
-                onClick={() => {
-                  setPromoteTarget(null);
-                  setPromoteSecret("");
-                }}
-                className="uv-btn-ghost"
+                onClick={() => { setPromoteTarget(null); setPromoteSecret(''); }}
+                className="font-body text-[12px] tracking-[0.08em] uppercase font-semibold border border-[#E8E6E2] text-[#1A1A1A] px-5 py-2.5 rounded-md hover:border-[#1A1A1A] transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={promoting || !promoteSecret}
-                className="uv-btn-primary disabled:opacity-50"
+                className="font-body text-[12px] tracking-[0.08em] uppercase font-semibold bg-[#C92A2A] text-white px-5 py-2.5 rounded-md hover:bg-[#a82020] transition-colors disabled:opacity-50"
               >
-                {promoting ? "Promoviendo…" : "Promover"}
+                {promoting ? 'Promoviendo…' : 'Promover'}
               </button>
             </div>
           </form>
@@ -301,27 +250,11 @@ export default function AdminUsersPage() {
   );
 }
 
-function Metric({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: number;
-  accent?: boolean;
-}) {
+function MetricCard({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
   return (
-    <div className="border border-gray-100 rounded-xl p-5">
-      <p className="text-[12px] uppercase tracking-wider text-gray-500">
-        {label}
-      </p>
-      <p
-        className={`text-2xl font-semibold tracking-display mt-2 ${
-          accent ? "text-[var(--uv-red)]" : "text-black"
-        }`}
-      >
-        {value}
-      </p>
+    <div className="border border-[#E8E6E2] rounded-md p-5 bg-white">
+      <p className="font-body text-[11px] uppercase tracking-[0.12em] text-[#6B6B6B] mb-2">{label}</p>
+      <p className={`font-display font-bold text-[24px] ${accent ? 'text-[#C92A2A]' : 'text-[#1A1A1A]'}`}>{value}</p>
     </div>
   );
 }

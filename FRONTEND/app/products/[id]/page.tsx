@@ -3,8 +3,8 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
+import Navbar from "@/app/(landing)/components/Navbar";
+import Footer from "@/app/(landing)/components/Footer";
 import { useCart, formatPrice } from "@/app/lib/cart";
 
 type Product = {

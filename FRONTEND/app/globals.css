@@ -1,8 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&family=Public+Sans:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #000000;
+  /* landing/catalog design tokens */
+  --background-soft: #F0EFED;
+  --background-dark: #1A1A1A;
+  --foreground-muted: #6B6B6B;
+  --border-soft: #E8E6E2;
+  --accent: #C92A2A;
   --uv-red: #a7001e;
   --uv-red-dark: #870018;
   --uv-red-soft: rgba(167, 0, 30, 0.08);
@@ -22,6 +29,13 @@
   --color-uv-muted: var(--uv-muted);
   --color-uv-border: var(--uv-border);
   --font-sans: var(--font-inter);
+  --font-display: 'Urbanist', sans-serif;
+  --font-body: 'Public Sans', sans-serif;
+}
+
+::selection {
+  background: #C92A2A;
+  color: #FAFAF8;
 }
 
 html,

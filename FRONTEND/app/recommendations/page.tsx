@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
+import Navbar from "@/app/(landing)/components/Navbar";
+import Footer from "@/app/(landing)/components/Footer";
 import ProductCard from "@/app/components/ProductCard";
 import { apiFetch } from "@/app/lib/api";
 

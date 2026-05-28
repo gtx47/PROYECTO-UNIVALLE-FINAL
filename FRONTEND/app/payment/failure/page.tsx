@@ -1,67 +1,91 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { motion } from 'framer-motion';
+import Navbar from '@/app/(landing)/components/Navbar';
+import Footer from '@/app/(landing)/components/Footer';
 
 function Content() {
   const params = useSearchParams();
-  const msg = params.get("msg") ?? "Tu pago no pudo ser procesado.";
-  const order = params.get("order");
+  const msg = params.get('msg') ?? 'Tu pago no pudo ser procesado.';
+  const order = params.get('order');
 
   return (
-    <main className="max-w-2xl mx-auto px-6 py-24 text-center flex-1 w-full">
-      <div className="w-12 h-12 rounded-full bg-[var(--uv-red)]/10 mx-auto mb-8 flex items-center justify-center">
-        <svg
-          className="w-6 h-6 text-[var(--uv-red)]"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={2}
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6 18 18 6M6 6l12 12"
-          />
+    <main className="flex-1 flex flex-col items-center justify-center px-6 py-32 text-center">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="w-16 h-16 rounded-full bg-[#C92A2A]/10 flex items-center justify-center mb-8"
+      >
+        <svg className="w-8 h-8 text-[#C92A2A]" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
         </svg>
-      </div>
-      <h1 className="text-4xl md:text-5xl font-semibold tracking-display text-black mb-4 leading-tight">
-        Pago fallido.
-      </h1>
-      <p className="text-gray-500 text-lg leading-relaxed mb-10">{msg}</p>
+      </motion.div>
+
+      <motion.h1
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        className="font-display font-bold text-[#1A1A1A] mb-3"
+        style={{ fontSize: 'clamp(28px, 4vw, 42px)', letterSpacing: '-0.03em', lineHeight: 1.1 }}
+      >
+        Pago fallido
+      </motion.h1>
+
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="font-body text-[15px] text-[#6B6B6B] max-w-sm leading-relaxed mb-10"
+      >
+        {msg}
+      </motion.p>
 
       {order && (
-        <div className="inline-block text-left border border-gray-100 rounded-xl px-6 py-5 mb-10 bg-white">
-          <p className="text-sm text-gray-500">
-            Orden{" "}
-            <code className="text-black font-mono text-[13px]">{order}</code>{" "}
-            <span className="text-gray-400">(cancelada)</span>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="border border-[#E8E6E2] rounded-md px-6 py-4 mb-10"
+        >
+          <p className="font-body text-[13px] text-[#6B6B6B]">
+            Orden <code className="font-mono text-[#1A1A1A] text-[12px]">{order}</code>{' '}
+            <span className="text-[#C92A2A]">(cancelada)</span>
           </p>
-        </div>
+        </motion.div>
       )}
 
-      <div className="flex gap-3 justify-center flex-wrap">
-        <Link href="/checkout" className="uv-btn-primary">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.35 }}
+        className="flex gap-3 flex-wrap justify-center"
+      >
+        <Link
+          href="/checkout"
+          className="font-body text-[12px] tracking-[0.08em] uppercase font-semibold bg-[#C92A2A] text-white px-7 py-3 rounded-md hover:bg-[#a82020] transition-colors duration-300"
+        >
           Reintentar
         </Link>
-        <Link href="/cart" className="uv-btn-ghost">
+        <Link
+          href="/cart"
+          className="font-body text-[12px] tracking-[0.08em] uppercase font-semibold border border-[#1A1A1A] text-[#1A1A1A] px-7 py-3 rounded-md hover:bg-[#1A1A1A] hover:text-white transition-all duration-300"
+        >
           Ver carrito
         </Link>
-      </div>
+      </motion.div>
     </main>
   );
 }
 
 export default function FailurePage() {
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col">
+    <div className="min-h-screen bg-[#FAFAF8] flex flex-col">
       <Navbar />
-      <Suspense
-        fallback={<p className="p-8 text-gray-500">Cargando…</p>}
-      >
+      <Suspense fallback={<div className="flex-1" />}>
         <Content />
       </Suspense>
       <Footer />
