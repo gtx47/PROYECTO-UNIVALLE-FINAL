@@ -28,6 +28,48 @@ const item: Variants = {
 const PW_COLORS = ['bg-[#E8E6E2]', 'bg-red-400', 'bg-amber-400', 'bg-lime-400', 'bg-green-500'];
 const PW_LABELS = ['', 'Débil', 'Aceptable', 'Buena', 'Fuerte'];
 
+// Solo letras (incluyendo tildes, ñ, ü) y espacios — sin números ni símbolos
+const NAME_RE = /^[A-Za-záéíóúÁÉÍÓÚñÑüÜ\s'-]+$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type FieldErrors = { name?: string; email?: string; password?: string };
+
+function validateFields(name: string, email: string, password: string): FieldErrors {
+  const errs: FieldErrors = {};
+
+  const trimmedName = name.trim();
+  if (!trimmedName) {
+    errs.name = 'El nombre es obligatorio.';
+  } else if (trimmedName.length < 2) {
+    errs.name = 'El nombre debe tener al menos 2 caracteres.';
+  } else if (!NAME_RE.test(trimmedName)) {
+    errs.name = 'El nombre solo puede contener letras y espacios (sin números ni símbolos).';
+  }
+
+  if (!email) {
+    errs.email = 'El correo es obligatorio.';
+  } else if (!EMAIL_RE.test(email)) {
+    errs.email = 'Ingresa un correo electrónico válido.';
+  }
+
+  if (!password) {
+    errs.password = 'La contraseña es obligatoria.';
+  } else if (password.length < 8) {
+    errs.password = 'La contraseña debe tener al menos 8 caracteres.';
+  }
+
+  return errs;
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p className="font-body mt-1 px-1 text-[11px] text-[#C92A2A]" role="alert">
+      {message}
+    </p>
+  );
+}
+
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -36,6 +78,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const pwScore = (() => {
     let s = 0;
@@ -46,15 +90,40 @@ export default function RegisterPage() {
     return s;
   })();
 
+  const handleBlur = (field: keyof FieldErrors) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setFieldErrors(validateFields(name, email, password));
+  };
+
+  const handleNameChange = (val: string) => {
+    setName(val);
+    if (touched.name) setFieldErrors(validateFields(val, email, password));
+  };
+
+  const handleEmailChange = (val: string) => {
+    setEmail(val);
+    if (touched.email) setFieldErrors(validateFields(name, val, password));
+  };
+
+  const handlePasswordChange = (val: string) => {
+    setPassword(val);
+    if (touched.password) setFieldErrors(validateFields(name, email, val));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errs = validateFields(name, email, password);
+    setFieldErrors(errs);
+    setTouched({ name: true, email: true, password: true });
+    if (Object.keys(errs).length > 0) return;
+
     setLoading(true);
     setError('');
     setSuccess(false);
 
     const r = await apiFetch('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name: name.trim(), email, password }),
     });
 
     if (!r.ok) {
@@ -67,12 +136,16 @@ export default function RegisterPage() {
     setName('');
     setEmail('');
     setPassword('');
+    setFieldErrors({});
+    setTouched({});
     setLoading(false);
   };
 
+  const borderClass = (field: keyof FieldErrors) =>
+    touched[field] && fieldErrors[field] ? 'border-[#C92A2A]' : 'border-[#E8E6E2]';
+
   return (
     <main className="relative grid min-h-screen w-full grid-cols-1 overflow-hidden bg-[#FAFAF8] md:grid-cols-[35%_65%]">
-      {/* Volver al inicio */}
       <Link
         href="/"
         className="font-body absolute right-6 top-6 z-30 inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-[#6B6B6B] transition-colors duration-200 hover:text-[#1A1A1A] md:right-10 md:top-8"
@@ -81,10 +154,8 @@ export default function RegisterPage() {
         Volver al inicio
       </Link>
 
-      {/* Izquierda: panel gris */}
       <div className="hidden bg-[#F0EFED] md:block" aria-hidden />
 
-      {/* Derecha: formulario */}
       <div className="flex items-center justify-center px-6 py-14 md:px-12 lg:px-20">
         <motion.div
           variants={container}
@@ -104,7 +175,6 @@ export default function RegisterPage() {
             Regístrate para empezar a comprar en segundos.
           </motion.p>
 
-          {/* Éxito */}
           {success && (
             <motion.div
               initial={{ opacity: 0, y: -6 }}
@@ -120,7 +190,6 @@ export default function RegisterPage() {
             </motion.div>
           )}
 
-          {/* Error */}
           {error && (
             <motion.div
               initial={{ opacity: 0, y: -6 }}
@@ -136,44 +205,54 @@ export default function RegisterPage() {
             </motion.div>
           )}
 
-          <motion.form variants={item} className="mt-7 space-y-3" onSubmit={handleSubmit}>
+          <motion.form variants={item} className="mt-7 space-y-3" onSubmit={handleSubmit} noValidate>
             {/* Nombre */}
-            <div className="rounded-md border border-[#E8E6E2] bg-white px-4 py-2 transition-colors duration-200 focus-within:border-[#C92A2A]">
-              <label htmlFor="name" className="font-body block text-[11px] text-[#6B6B6B]">
-                Nombre completo
-              </label>
-              <input
-                id="name"
-                type="text"
-                autoComplete="name"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Tu nombre"
-                className="font-body w-full bg-transparent text-[14px] text-[#1A1A1A] outline-none placeholder:text-[#6B6B6B]/50"
-              />
+            <div>
+              <div className={`rounded-md border bg-white px-4 py-2 transition-colors duration-200 focus-within:border-[#C92A2A] ${borderClass('name')}`}>
+                <label htmlFor="name" className="font-body block text-[11px] text-[#6B6B6B]">
+                  Nombre completo
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={name}
+                  onChange={(e) => handleNameChange(e.target.value)}
+                  onBlur={() => handleBlur('name')}
+                  placeholder="Tu nombre"
+                  aria-describedby={fieldErrors.name ? 'name-error' : undefined}
+                  className="font-body w-full bg-transparent text-[14px] text-[#1A1A1A] outline-none placeholder:text-[#6B6B6B]/50"
+                />
+              </div>
+              {touched.name && <FieldError message={fieldErrors.name} />}
             </div>
 
             {/* Email */}
-            <div className="rounded-md border border-[#E8E6E2] bg-white px-4 py-2 transition-colors duration-200 focus-within:border-[#C92A2A]">
-              <label htmlFor="email" className="font-body block text-[11px] text-[#6B6B6B]">
-                Correo electrónico
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tucorreo@univalle.edu.co"
-                className="font-body w-full bg-transparent text-[14px] text-[#1A1A1A] outline-none placeholder:text-[#6B6B6B]/50"
-              />
+            <div>
+              <div className={`rounded-md border bg-white px-4 py-2 transition-colors duration-200 focus-within:border-[#C92A2A] ${borderClass('email')}`}>
+                <label htmlFor="email" className="font-body block text-[11px] text-[#6B6B6B]">
+                  Correo electrónico
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  onBlur={() => handleBlur('email')}
+                  placeholder="tucorreo@univalle.edu.co"
+                  aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+                  className="font-body w-full bg-transparent text-[14px] text-[#1A1A1A] outline-none placeholder:text-[#6B6B6B]/50"
+                />
+              </div>
+              {touched.email && <FieldError message={fieldErrors.email} />}
             </div>
 
             {/* Password */}
             <div>
-              <div className="relative rounded-md border border-[#E8E6E2] bg-white px-4 py-2 transition-colors duration-200 focus-within:border-[#C92A2A]">
+              <div className={`relative rounded-md border bg-white px-4 py-2 transition-colors duration-200 focus-within:border-[#C92A2A] ${borderClass('password')}`}>
                 <label htmlFor="password" className="font-body block text-[11px] text-[#6B6B6B]">
                   Contraseña
                 </label>
@@ -182,10 +261,11 @@ export default function RegisterPage() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   required
-                  minLength={8}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  onBlur={() => handleBlur('password')}
                   placeholder="Mínimo 8 caracteres"
+                  aria-describedby={fieldErrors.password ? 'password-error' : undefined}
                   className="font-body w-full bg-transparent pr-8 text-[14px] text-[#1A1A1A] outline-none placeholder:text-[#6B6B6B]/50"
                 />
                 <button
@@ -197,6 +277,8 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
+
+              {touched.password && <FieldError message={fieldErrors.password} />}
 
               {/* Medidor de seguridad */}
               {password.length > 0 && (
@@ -239,14 +321,12 @@ export default function RegisterPage() {
             </motion.button>
           </motion.form>
 
-          {/* OR */}
           <motion.div variants={item} className="my-5 flex items-center gap-3">
             <span className="h-px flex-1 bg-[#E8E6E2]" />
             <span className="font-body text-[11px] uppercase tracking-[0.2em] text-[#6B6B6B]">OR</span>
             <span className="h-px flex-1 bg-[#E8E6E2]" />
           </motion.div>
 
-          {/* Google */}
           <motion.button
             variants={item}
             type="button"

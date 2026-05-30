@@ -62,14 +62,21 @@ export default function Navbar() {
         </span>
       </Link>
 
-      {/* Centro — Catálogo */}
-      <div className="flex justify-center">
+      {/* Centro — navegación */}
+      <div className="flex justify-center items-center gap-3">
         <Link href="/catalog" className={`font-body text-xs tracking-widest uppercase border rounded px-3 py-1.5 transition-all duration-300 ${
           solid
             ? 'text-[#2A323D]/70 border-[#2A323D]/20 hover:text-[#2A323D] hover:border-[#2A323D]/50'
             : 'text-white/80 border-white/20 hover:text-white hover:border-white/50'
         }`}>
           Catálogo
+        </Link>
+        <Link href="/recommendations" className={`font-body text-xs tracking-widest uppercase border rounded px-3 py-1.5 transition-all duration-300 ${
+          solid
+            ? 'text-[#2A323D]/70 border-[#2A323D]/20 hover:text-[#2A323D] hover:border-[#2A323D]/50'
+            : 'text-white/80 border-white/20 hover:text-white hover:border-white/50'
+        }`}>
+          Para ti
         </Link>
       </div>
 
